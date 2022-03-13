@@ -1,6 +1,7 @@
 # write a code to read daat from mysql and write it to aws s3
 
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
 import yaml
 import os.path
 import com.utils.utilities as ut
@@ -30,29 +31,21 @@ if __name__ == '__main__':
 
     for src in source_list:
         if src == 'SB':
-            jdbc_params = {"url": ut.get_mysql_jdbc_url(app_secret),
-                          "lowerBound": "1",
-                          "upperBound": "100",
-                          "dbtable": app_conf["mysql_conf"]["dbtable"],
-                          "numPartitions": "2",
-                          "partitionColumn": app_conf["mysql_conf"]["partition_column"],
-                          "user": app_secret["mysql_conf"]["username"],
-                          "password": app_secret["mysql_conf"]["password"]
-                           }
-            # print(jdbcParams)
+            txnDf = ut.read_from_mysql(spark,
+                                       app_secret['mysql_conf']['hostname'],
+                                       app_secret['mysql_conf']['hostname'],
+                                       app_secret['mysql_conf']['database'],
+                                       app_conf["mysql_conf"]["dbtable"],
+                                       app_secret["mysql_conf"]["username"],
+                                       app_secret["mysql_conf"]["password"],
+                                       app_conf["mysql_conf"]["partition_column"])
+            txnDf = txnDf.withColumn('ins_dt', current_date())
 
-            # use the ** operator/un-packer to treat a python dictionary as **kwargs
-            print("\nReading data from MySQL DB using SparkSession.read.format(),")
-            txnDF = spark\
-                .read.format("jdbc")\
-                .option("driver", "com.mysql.cj.jdbc.Driver")\
-                .options(**jdbc_params)\
-                .load()
-
-            txnDF = ut.read_from_mysql()
-
-            txnDF.show()
-            txnDF.write.parquet(datalake_path + '/' + src)
+            txnDf.show()
+            txnDf.write \
+                .mode('append') \
+                .partitionBy('ins_dt') \
+                .parquet(datalake_path + '/' + src)
 
         elif src == 'OL':
             ol_txn_df = ut.read_from_sftp(spark,
@@ -61,22 +54,34 @@ if __name__ == '__main__':
                                           app_secret["sftp_conf"]["username"],
                                           os.path.abspath(current_dir + "/../../../../" + app_secret["sftp_conf"]["pem"]),
                                           app_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv")
+            ol_txn_df = ol_txn_df.withColumn('ins_dt', current_date())
 
             ol_txn_df.show(5, False)
             ol_txn_df.write.parquet(datalake_path + '/' + src)
 
         elif src == 'ADDR':
+            addr_df = ut.read_from_mongodb(spark,
+                                                   app_conf["mongodb_config"]["database"],
+                                                   app_conf["mongodb_config"]["collection"])
+            addr_df = addr_df.withColumn('ins_dt', current_date())
 
+            addr_df.show()
 
-            students = spark \
-                .read \
-                .format("com.mongodb.spark.sql.DefaultSource") \
-                .option("database", app_conf["mongodb_config"]["database"]) \
-                .option("collection", app_conf["mongodb_config"]["collection"]) \
-                .load()
+            addr_df.write \
+                .mode('append') \
+                .partitionBy('ins_dt') \
+                .parquet(datalake_path + '/' + src)
 
-            students.show()
+        elif src == 'CP':
+            cp_df = spark.read.csv('s3a://' + s3_conf['bucket_name'] + '/KC_Extract_1_20171009.csv')
+            cp_df = addr_df.withColumn('ins_dt', current_date())
 
-            students.write.parquet(datalake_path + '/' + src)
+            cp_df.show()
+
+            cp_df.write \
+                .mode('append') \
+                .partitionBy('ins_dt') \
+                .parquet(datalake_path + '/' + src)
+
 
 # spark-submit --packages "mysql:mysql-connector-java:8.0.15" dataframe/ingestion/others/systems/mysql_df.py

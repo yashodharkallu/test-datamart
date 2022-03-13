@@ -15,7 +15,7 @@ def get_mysql_jdbc_url(hostname, port, database):
     return "jdbc:mysql://{}:{}/{}?autoReconnect=true&useSSL=false".format(hostname, port, database)
 
 
-def read_from_mysql(spark, hostname, port, database, dbtable, partition_column, username, password):
+def read_from_mysql(spark, hostname, port, database, dbtable, username, password, partition_column):
     jdbc_params = {"url": get_mysql_jdbc_url(hostname, port, database),
                    "lowerBound": "1",
                    "upperBound": "100",
@@ -25,9 +25,18 @@ def read_from_mysql(spark, hostname, port, database, dbtable, partition_column, 
                    "user": username,
                    "password": password
                    }
-    df =  spark \
+    df = spark \
                 .read.format("jdbc") \
                 .option("driver", "com.mysql.cj.jdbc.Driver") \
                 .options(jdbc_params) \
                 .load()
+    return df
+
+def read_from_mongodb(spark, database, collection):
+    df = spark \
+        .read \
+        .format("com.mongodb.spark.sql.DefaultSource") \
+        .option("database", database) \
+        .option("collection", collection) \
+        .load()
     return df
