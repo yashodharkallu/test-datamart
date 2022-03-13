@@ -35,10 +35,10 @@ if __name__ == '__main__':
                                        app_secret['mysql_conf']['hostname'],
                                        app_secret['mysql_conf']['hostname'],
                                        app_secret['mysql_conf']['database'],
-                                       app_conf["mysql_conf"]["dbtable"],
+                                       app_conf['SB']["mysql_conf"]["dbtable"],
                                        app_secret["mysql_conf"]["username"],
                                        app_secret["mysql_conf"]["password"],
-                                       app_conf["mysql_conf"]["partition_column"])
+                                       app_conf['SB']["mysql_conf"]["partition_column"])
             txnDf = txnDf.withColumn('ins_dt', current_date())
 
             txnDf.show()
