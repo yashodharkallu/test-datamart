@@ -26,7 +26,7 @@ if __name__ == '__main__':
     app_secret = yaml.load(secret, Loader=yaml.FullLoader)
 
     s3_conf = app_conf['s3_conf']
-    datalake_path = 's3a://' + s3_conf['s3_bucket'] + s3_conf['datalake_path']
+    datalake_path = 's3a://' + s3_conf['s3_bucket'] + '/' + s3_conf['datalake_path']
     source_list = app_conf['source_list']
 
     for src in source_list:
