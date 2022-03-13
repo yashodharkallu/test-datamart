@@ -52,7 +52,7 @@ if __name__ == '__main__':
                                           app_secret["sftp_conf"]["hostname"],
                                           app_secret["sftp_conf"]["port"],
                                           app_secret["sftp_conf"]["username"],
-                                          os.path.abspath(current_dir + "/../../../../" + app_secret["sftp_conf"]["pem"]),
+                                          os.path.abspath(current_dir + "/../../" + app_secret["sftp_conf"]["pem"]),
                                           app_conf["sftp_conf"]["directory"] + "/receipts_delta_GBR_14_10_2017.csv")
             ol_txn_df = ol_txn_df.withColumn('ins_dt', current_date())
 
@@ -84,4 +84,4 @@ if __name__ == '__main__':
                 .parquet(datalake_path + '/' + src)
 
 
-# spark-submit --packages "mysql:mysql-connector-java:8.0.15,org.apache.hadoop:hadoop-aws:2.7.4" com/clientname/source_data_loading.py
+# spark-submit --packages "mysql:mysql-connector-java:8.0.15,org.apache.hadoop:hadoop-aws:2.7.4,com.springml:spark-sftp_2.11:1.1.1" com/clientname/source_data_loading.py
