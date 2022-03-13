@@ -28,7 +28,7 @@ def read_from_mysql(spark, hostname, port, database, dbtable, username, password
     df = spark \
                 .read.format("jdbc") \
                 .option("driver", "com.mysql.cj.jdbc.Driver") \
-                .options(jdbc_params) \
+                .options(**jdbc_params) \
                 .load()
     return df
 
