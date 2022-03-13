@@ -26,7 +26,7 @@ if __name__ == '__main__':
     app_secret = yaml.load(secret, Loader=yaml.FullLoader)
 
     s3_conf = app_conf['s3_conf']
-    datalake_path = 's3a://' + s3_conf['datalake_path']
+    datalake_path = 's3a://' + s3_conf['s3_bucket'] + s3_conf['datalake_path']
     source_list = app_conf['source_list']
 
     for src in source_list:
@@ -84,4 +84,4 @@ if __name__ == '__main__':
                 .parquet(datalake_path + '/' + src)
 
 
-# spark-submit --packages "mysql:mysql-connector-java:8.0.15" com/clientname/source_data_loading.py
+# spark-submit --packages "mysql:mysql-connector-java:8.0.15,org.apache.hadoop:hadoop-aws:2.7.4" com/clientname/source_data_loading.py
