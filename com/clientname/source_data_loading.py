@@ -33,7 +33,7 @@ if __name__ == '__main__':
         if src == 'SB':
             txnDf = ut.read_from_mysql(spark,
                                        app_secret['mysql_conf']['hostname'],
-                                       app_secret['mysql_conf']['hostname'],
+                                       app_secret['mysql_conf']['port'],
                                        app_secret['mysql_conf']['database'],
                                        app_conf['SB']["mysql_conf"]["dbtable"],
                                        app_secret["mysql_conf"]["username"],
